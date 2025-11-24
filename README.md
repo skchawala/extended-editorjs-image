@@ -1,0 +1,1 @@
+# Extended Editorjs Image plugin
