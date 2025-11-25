@@ -2,16 +2,17 @@
 
 🖼️ An EditorJS block tool for pasting and uploading images — handles Google Docs clipboard images, supports file uploads, and provides a clean paste-only input interface.
 
-> **📌 Note:** This tool is specifically designed for pasting images from the internet and Google Docs. Currently, only `uploadByFile` is supported. Additional features (like `uploadByUrl`, direct file selection, etc.) will be added in future releases.
+> **📌 Note:** This tool is specifically designed for pasting images from the internet and Google Docs. Both `uploadByFile` and `uploadByUrl` are supported. Additional features (like direct file selection, etc.) will be added in future releases.
 
 ## Features
 
 - 📋 **Paste-only input** — Clean interface that only accepts paste events
 - 🖼️ **Image preview** — Shows uploaded images with proper styling
-- ☁️ **File upload support** — Upload images via endpoints using `uploadByFile`
+- ☁️ **File upload support** — Upload images via `uploadByFile` method
+- 🔗 **URL upload support** — Upload images by URL via `uploadByUrl` method
 - 📎 **Google Docs support** — Specifically handles images pasted from Google Docs and internet
 - ⚡ **Upload status** — Visual feedback during upload process
-- 🎨 **Configurable** — Customize endpoints, headers, placeholders, and more
+- 🎨 **Configurable** — Customize uploaders, placeholders, and more
 - 🪶 **Lightweight** — No extra dependencies
 
 ---
@@ -82,7 +83,7 @@ const customUploader = {
       error: response.ok ? undefined : "Upload failed",
     };
   },
-  // uploadByUrl is optional - only needed if you want to support URL uploads
+  // uploadByUrl is optional - recommended for handling pasted image URLs
   uploadByUrl: async (url) => {
     const response = await fetch("https://api.example.com/upload-url", {
       method: "POST",
@@ -151,11 +152,12 @@ type UploadResult = {
 
 **Important Notes:**
 
-- `uploadByFile` is required for file uploads (currently the primary use case)
-- `uploadByUrl` is optional and will be supported in future releases
+- `uploadByFile` is required for file uploads (handles pasted image files)
+- `uploadByUrl` is optional but recommended for URL-based uploads (handles pasted image URLs)
 - Both methods should return a `UploadResult` object
 - The `success` field should be `1` for success or `0` for failure
 - The `file.url` should contain the uploaded image URL on success
+- You can provide both methods or just `uploadByFile` depending on your needs
 
 ### Action Interface
 
