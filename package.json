@@ -1,8 +1,18 @@
 {
   "name": "@skchawala/extended-editorjs-image",
-  "description": "Extended Editor.js Image Plugin",
+  "description": "EditorJS Image tool that handles Google Docs / text/html clipboard image pastes and uploads them like the Image tool.",
   "author": "Satish Kumar <satishkchawala@gmail.com>",
   "license": "MIT",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "dev:playground": "vite --config playground/vite.config.js",
+    "postbuild": "tsc --emitDeclarationOnly",
+    "release": "npm run build && npm publish --access public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/skchawala/extended-editorjs-image.git"
@@ -11,18 +21,45 @@
   "keywords": [
     "editorjs",
     "image",
-    "plugin"
+    "plugin",
+    "google docs",
+    "text/html",
+    "clipboard",
+    "paste",
+    "upload"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.es.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.cjs.js",
+      "default": "./dist/index.umd.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "public"
   ],
   "private": false,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
   "devDependencies": {
     "typescript": "~5.9.3",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "@editorjs/editorjs": "^2.31.0"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@editorjs/editorjs": "^2.31.0"
   }
 }
