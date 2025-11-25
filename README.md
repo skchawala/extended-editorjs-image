@@ -43,40 +43,9 @@ import ExtendedEditorJsImage from "@skchawala/extended-editorjs-image";
 const editor = new EditorJS({
   holder: "editorjs",
   tools: {
-    image: {
+    extendedImage: {
       class: ExtendedEditorJsImage,
       config: {
-        placeholder: "Paste image here...",
-      },
-    },
-  },
-});
-```
-
-### With Upload Endpoints
-
-```javascript
-import EditorJS from "@editorjs/editorjs";
-import ExtendedEditorJsImage from "@skchawala/extended-editorjs-image";
-
-const editor = new EditorJS({
-  holder: "editorjs",
-  tools: {
-    image: {
-      class: ExtendedEditorJsImage,
-      config: {
-        endpoints: {
-          byFile: "https://api.example.com/upload/file",
-          byUrl: "https://api.example.com/upload/url",
-        },
-        additionalRequestHeaders: {
-          Authorization: "Bearer your-token",
-        },
-        additionalRequestData: {
-          userId: 123,
-          category: "editor",
-        },
-        field: "image",
         placeholder: "Paste image here...",
       },
     },
@@ -86,23 +55,53 @@ const editor = new EditorJS({
 
 ### With Custom Uploader
 
+You need to provide an `Uploader` object with `uploadByFile` and/or `uploadByUrl` methods:
+
 ```javascript
 import EditorJS from "@editorjs/editorjs";
-import ExtendedEditorJsImage, {
-  UploaderUtil,
-} from "@skchawala/extended-editorjs-image";
+import ExtendedEditorJsImage from "@skchawala/extended-editorjs-image";
 
-const customUploader = new UploaderUtil({
-  byFileEndpoint: "https://api.example.com/upload",
-  byUrlEndpoint: "https://api.example.com/upload-url",
-  headers: {
-    Authorization: "Bearer token",
+const customUploader = {
+  uploadByFile: async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const response = await fetch("https://api.example.com/upload", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer your-token",
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    return {
+      success: response.ok ? 1 : 0,
+      file: data.url ? { url: data.url } : undefined,
+      error: response.ok ? undefined : "Upload failed",
+    };
   },
-  fieldName: "image",
-  additionalRequestData: {
-    folder: "uploads",
+  // uploadByUrl is optional - only needed if you want to support URL uploads
+  uploadByUrl: async (url) => {
+    const response = await fetch("https://api.example.com/upload-url", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer your-token",
+      },
+      body: JSON.stringify({ url }),
+    });
+
+    const data = await response.json();
+
+    return {
+      success: response.ok ? 1 : 0,
+      file: data.url ? { url: data.url } : undefined,
+      error: response.ok ? undefined : "Upload failed",
+    };
   },
-});
+};
 
 const editor = new EditorJS({
   holder: "editorjs",
@@ -122,23 +121,20 @@ const editor = new EditorJS({
 
 ## ⚙️ Configuration Options
 
-| Option                     | Type                                                            | Default                 | Description                                                             |
-| -------------------------- | --------------------------------------------------------------- | ----------------------- | ----------------------------------------------------------------------- |
-| `toolboxTitle`             | `string`                                                        | `"Paste Image"`         | Title displayed in the EditorJS toolbox                                 |
-| `placeholder`              | `string`                                                        | `"Paste image here..."` | Placeholder text for the input box                                      |
-| `endpoints`                | `{ byFile?: string, byUrl?: string }`                           | `undefined`             | Endpoints for file and URL uploading                                    |
-| `field`                    | `string`                                                        | `"image"`               | Name of the uploaded image field in POST request                        |
-| `types`                    | `string`                                                        | `"image/*"`             | MIME types of files that can be accepted                                |
-| `additionalRequestData`    | `Record<string, any>`                                           | `undefined`             | Additional data to send with uploading requests                         |
-| `additionalRequestHeaders` | `Record<string, string>`                                        | `undefined`             | Custom headers to add to upload requests                                |
-| `captionPlaceholder`       | `string`                                                        | `"Caption"`             | Placeholder for caption input (if caption feature is enabled)           |
-| `buttonContent`            | `string`                                                        | `undefined`             | HTML content to override the "Select file" button                       |
-| `uploader`                 | `Uploader`                                                      | `undefined`             | Custom uploader object with `uploadByFile` and/or `uploadByUrl` methods |
-| `actions`                  | `Array<Action>`                                                 | `undefined`             | Custom actions to show in the tool's settings menu                      |
-| `features`                 | `{ border?: boolean, background?: boolean, caption?: boolean }` | `undefined`             | Enable/disable additional features                                      |
-| `maxSizeBytes`             | `number`                                                        | `undefined`             | Maximum file size in bytes                                              |
+| Option               | Type                                                            | Default                 | Description                                                      |
+| -------------------- | --------------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------- |
+| `toolboxTitle`       | `string`                                                        | `"Paste Image"`         | Title displayed in the EditorJS toolbox                          |
+| `placeholder`        | `string`                                                        | `"Paste image here..."` | Placeholder text for the input box                               |
+| `uploader`           | `Uploader`                                                      | `undefined`             | Uploader object with `uploadByFile` and/or `uploadByUrl` methods |
+| `captionPlaceholder` | `string`                                                        | `"Caption"`             | Placeholder for caption input (if caption feature is enabled)    |
+| `buttonContent`      | `string`                                                        | `undefined`             | HTML content to override the "Select file" button                |
+| `actions`            | `Array<Action>`                                                 | `undefined`             | Custom actions to show in the tool's settings menu               |
+| `features`           | `{ border?: boolean, background?: boolean, caption?: boolean }` | `undefined`             | Enable/disable additional features                               |
+| `maxSizeBytes`       | `number`                                                        | `undefined`             | Maximum file size in bytes                                       |
 
 ### Uploader Interface
+
+You must provide an `Uploader` object that implements the following interface:
 
 ```typescript
 type Uploader = {
@@ -153,6 +149,14 @@ type UploadResult = {
 };
 ```
 
+**Important Notes:**
+
+- `uploadByFile` is required for file uploads (currently the primary use case)
+- `uploadByUrl` is optional and will be supported in future releases
+- Both methods should return a `UploadResult` object
+- The `success` field should be `1` for success or `0` for failure
+- The `file.url` should contain the uploaded image URL on success
+
 ### Action Interface
 
 ```typescript
@@ -166,47 +170,13 @@ type Action = {
 
 ---
 
-## 📦 UploaderUtil Class
-
-The package includes a utility class for easy endpoint-based uploads:
-
-```javascript
-import { UploaderUtil } from "@skchawala/extended-editorjs-image";
-
-const uploader = new UploaderUtil({
-  byFileEndpoint: "https://api.example.com/upload",
-  byUrlEndpoint: "https://api.example.com/upload-url",
-  headers: {
-    Authorization: "Bearer token",
-  },
-  fieldName: "image", // default: "image"
-  urlFieldName: "url", // default: "url"
-  additionalRequestData: {
-    folder: "uploads",
-  },
-});
-```
-
-### UploaderUtil Configuration
-
-| Option                  | Type                     | Default   | Description                                  |
-| ----------------------- | ------------------------ | --------- | -------------------------------------------- |
-| `byFileEndpoint`        | `string`                 | -         | Endpoint for file upload (required if using) |
-| `byUrlEndpoint`         | `string`                 | -         | Endpoint for URL upload (required if using)  |
-| `headers`               | `Record<string, string>` | -         | Custom headers for requests                  |
-| `fieldName`             | `string`                 | `"image"` | FormData field name for file upload          |
-| `urlFieldName`          | `string`                 | `"url"`   | Field name for URL upload (JSON body)        |
-| `additionalRequestData` | `Record<string, any>`    | -         | Additional data to send with requests        |
-
----
-
 ## 🛠️ Output Data
 
 The tool saves data in the following format:
 
 ```json
 {
-  "type": "image",
+  "type": "extendedImage",
   "data": {
     "file": {
       "url": "https://example.com/uploaded-image.jpg"
