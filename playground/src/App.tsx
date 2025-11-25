@@ -22,6 +22,7 @@ function App() {
             },
             toolboxTitle: "Paste Doc Image",
           },
+          shortcut: "CMD+SHIFT+G",
         },
       },
       onChange: async (api: API) => {
