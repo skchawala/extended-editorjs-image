@@ -1,7 +1,10 @@
 import { defineConfig } from "vite";
+import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
+
 import path from "path";
 
 export default defineConfig({
+  plugins: [cssInjectedByJsPlugin()],
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),

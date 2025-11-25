@@ -3,7 +3,7 @@
   "description": "EditorJS Image tool that handles Google Docs / text/html clipboard image pastes and uploads them like the Image tool.",
   "author": "Satish Kumar <satishkchawala@gmail.com>",
   "license": "MIT",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -31,7 +31,7 @@
   "engines": {
     "node": ">=22"
   },
-  "main": "dist/index.umd.js",
+  "main": "dist/index.cjs.js",
   "module": "dist/index.es.js",
   "types": "dist/types/index.d.ts",
   "exports": {
